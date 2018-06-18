@@ -49,8 +49,14 @@ module LoanPayments =
     let dateTimeParseAdapter format provider date = 
         DateTime.ParseExact(date, format, provider)
 
+    let parseUSDate date = 
+        dateTimeParseAdapter "M/d/yyyy" CultureInfo.InvariantCulture date
+
     let parseUSDateTime date = 
-        dateTimeParseAdapter "d" CultureInfo.InvariantCulture date
+        try 
+            dateTimeParseAdapter "M/d/yyyy H:m" CultureInfo.InvariantCulture date
+        with 
+            | err -> (printfn "Error date %s" date); raise err
 
     let mapToLoanStatus (status, paidOffTime, pastDueDays) =
         match status with
@@ -90,8 +96,8 @@ module LoanPayments =
             LoanStatus = mapToLoanStatus (data.[1], data.[6], data.[7]);
             Principal = Int32.Parse(data.[2]) * 1<dollar>;
             Terms = Int32.Parse(data.[3]) * 1<terms>;
-            EffectiveDate = parseUSDateTime data.[4];
-            DueDate = parseUSDateTime data.[5];
+            EffectiveDate = parseUSDate data.[4];
+            DueDate = parseUSDate data.[5];
             Age = Int32.Parse(data.[8]) * 1<age>;
             Education = mapToEducation data.[9];
             Gender = mapToGender data.[10];
